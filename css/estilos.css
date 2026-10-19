@@ -133,6 +133,8 @@ button { font: inherit; cursor: pointer; }
 .destacado__info { padding: 22px 28px; }
 .destacado__info h2 { font-size: 1.9rem; margin: 6px 0 4px; }
 .meta { margin: 0; color: var(--sutil); display: flex; flex-wrap: wrap; gap: 0 6px; }
+.meta--encargados { align-items: center; gap: 6px; margin-top: 6px; color: var(--tinta); }
+.meta svg { width: 16px; height: 16px; flex: none; color: var(--dorado); }
 
 /* ---------- Barra de filtros ---------- */
 
@@ -164,6 +166,7 @@ button { font: inherit; cursor: pointer; }
 .chip__punto { width: 8px; height: 8px; border-radius: 50%; background: var(--cat); }
 .chip.activo { background: var(--verde); border-color: var(--verde); color: #fff; }
 .chip.activo .chip__punto { box-shadow: 0 0 0 2px rgba(255, 255, 255, .7); }
+.chip__total { font-size: .75rem; font-weight: 700; color: var(--sutil); background: #f1eadc; border-radius: 999px; padding: 0 7px; }
 
 .vistas { display: inline-flex; padding: 4px; background: #ece4d5; border-radius: 999px; }
 .vistas__btn {
@@ -406,6 +409,11 @@ textarea { resize: vertical; }
 .panel__herramientas input[type="search"] { width: 200px; padding: 7px 12px; }
 .contador { font-family: var(--sans); font-size: .85rem; font-weight: 700; background: #ece4d5; color: var(--sutil); padding: 2px 9px; border-radius: 999px; vertical-align: middle; }
 
+.categorias-admin { display: grid; gap: 8px; margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px dashed var(--borde); }
+.categorias-admin:empty { display: none; }
+.categorias-admin__titulo { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--sutil); }
+.categorias-admin__titulo small { font-weight: 400; text-transform: none; letter-spacing: 0; }
+.categorias-admin .chip { font-size: .85rem; padding: 4px 10px; }
 .tabla { display: grid; gap: 10px; }
 .fila {
   display: grid;

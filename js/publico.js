@@ -1,9 +1,9 @@
 import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { CATEGORIAS, configurado } from "./config.js";
+import { configurado } from "./config.js";
 import { db, COLECCION, aLista } from "./firebase.js";
 import {
   MESES, DIAS, DIAS_CORTOS, escapar, capitalizar, aFecha, aISO, hoyISO, diasHasta,
-  fechaLarga, horaBonita, categoria, ordenarEventos, aplicarMarca, eventosDemo,
+  fechaLarga, rangoHora, categoria, categoriasDe, ordenarEventos, aplicarMarca, eventosDemo,
 } from "./comun.js";
 
 const estado = {
@@ -43,10 +43,12 @@ function conectar() {
 
 function recibir(eventos) {
   estado.eventos = ordenarEventos(eventos.filter((e) => e.fecha));
+  pintarFiltros();
   pintar();
 }
 
-const visibles = () => estado.eventos.filter((e) => estado.filtro === "todas" || e.categoria === estado.filtro);
+const visibles = () => estado.eventos.filter((e) =>
+  estado.filtro === "todas" || categoria(e.categoria).clave === estado.filtro);
 
 function pintar() {
   pintarDestacado();
@@ -56,8 +58,11 @@ function pintar() {
 
 // ---------- Filtros y vistas ----------
 
+// Los filtros salen de las categorías que tienen los eventos guardados.
 function pintarFiltros() {
-  const chips = [["todas", "Todas", null], ...Object.entries(CATEGORIAS).map(([k, c]) => [k, c.nombre, c.color])];
+  const cats = categoriasDe(estado.eventos);
+  if (!cats.some((c) => c.clave === estado.filtro)) estado.filtro = "todas";
+  const chips = [["todas", "Todas", null], ...cats.map((c) => [c.clave, c.nombre, c.color])];
   $("#filtros").innerHTML = chips.map(([clave, nombre, color]) => `
     <button class="chip ${clave === estado.filtro ? "activo" : ""}" data-filtro="${clave}"
       ${color ? `style="--cat:${color}"` : ""} aria-pressed="${clave === estado.filtro}">
@@ -109,9 +114,10 @@ function pintarDestacado() {
       <h2>${escapar(prox.titulo)}</h2>
       <p class="meta">
         <span>${fechaLarga(prox.fecha)}</span>
-        ${prox.hora ? `<span>· ${horaBonita(prox.hora)}</span>` : ""}
+        ${prox.hora ? `<span>· ${rangoHora(prox)}</span>` : ""}
         ${prox.lugar ? `<span>· ${escapar(prox.lugar)}</span>` : ""}
       </p>
+      ${prox.encargados ? `<p class="meta meta--encargados">${iconoEncargados}Encargados: ${escapar(prox.encargados)}</p>` : ""}
     </div>`;
 }
 
@@ -131,15 +137,17 @@ function tarjeta(e) {
       <div class="evento__cuerpo">
         <div class="evento__arriba">
           <span class="badge">${escapar(cat.nombre)}</span>
-          ${e.hora ? `<span class="evento__hora">${horaBonita(e.hora)}</span>` : ""}
+          ${e.hora ? `<span class="evento__hora">${rangoHora(e)}</span>` : ""}
         </div>
         <h3>${escapar(e.titulo)}</h3>
         ${e.lugar ? `<p class="evento__lugar">${iconoLugar}${escapar(e.lugar)}</p>` : ""}
+        ${e.encargados ? `<p class="evento__lugar">${iconoEncargados}<span><strong>Encargados:</strong> ${escapar(e.encargados)}</span></p>` : ""}
         ${e.descripcion ? `<p class="evento__desc">${escapar(e.descripcion)}</p>` : ""}
       </div>
     </article>`;
 }
 
+const iconoEncargados = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm7.5 0a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM9 13c-4 0-7 2-7 4.5V20h14v-2.5C16 15 13 13 9 13zm7.5 0c-.6 0-1.2.1-1.7.2 1.4 1 2.2 2.4 2.2 4.3V20H22v-2.5c0-2.5-2.5-4.5-5.5-4.5z" fill="currentColor"/></svg>`;
 const iconoLugar = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" fill="currentColor"/></svg>`;
 
 function pintarLista() {

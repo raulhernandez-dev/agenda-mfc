@@ -23,15 +23,17 @@ export const firebaseConfig = {
   appId: "1:137748487171:web:9d46fd437098737a214236",
 };
 
-// Categorías de eventos: nombre visible y color.
+// Categorías que se sugieren al registrar un evento, con su color.
+// En el panel se puede escribir cualquier otra: las nuevas reciben
+// un color automático.
 export const CATEGORIAS = {
-  culto:    { nombre: "Culto",           color: "#7a2334" },
-  oracion:  { nombre: "Oración",         color: "#3c5a8a" },
-  estudio:  { nombre: "Estudio bíblico", color: "#2f6b5a" },
-  jovenes:  { nombre: "Jóvenes",         color: "#b5651d" },
-  ninos:    { nombre: "Niños",           color: "#8a5aa8" },
-  especial: { nombre: "Evento especial", color: "#a8822f" },
-  otro:     { nombre: "Otro",            color: "#6b6258" },
+  "Misa":            "#7a2334",
+  "Rosario":         "#3c5a8a",
+  "Hora Santa":      "#5b4a8a",
+  "Vigilia":         "#9c3d6b",
+  "Pláticas":        "#2f6b5a",
+  "Reunión":         "#02594a",
+  "Evento especial": "#a8822f",
 };
 
 // Mientras no pongas tu configuración real, la vista pública

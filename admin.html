@@ -67,24 +67,31 @@
         </div>
         <form id="formEvento" class="form">
           <label>Título *
-            <input id="fTitulo" required maxlength="120" placeholder="Ej. Culto dominical">
+            <input id="fTitulo" required maxlength="120" placeholder="Ej. Misa San Cayetano">
           </label>
           <div class="form__fila">
             <label>Fecha *
               <input type="date" id="fFecha" required>
             </label>
-            <label>Hora
-              <input type="time" id="fHora">
+            <label>Categoría
+              <input id="fCategoria" list="listaCategorias" maxlength="40" placeholder="Escribe o elige" autocomplete="off">
+              <datalist id="listaCategorias"></datalist>
             </label>
           </div>
           <div class="form__fila">
-            <label>Categoría
-              <select id="fCategoria"></select>
+            <label>Hora de inicio
+              <input type="time" id="fHora">
             </label>
-            <label>Lugar
-              <input id="fLugar" maxlength="120" placeholder="Ej. Templo principal">
+            <label>Hora de fin
+              <input type="time" id="fHoraFin">
             </label>
           </div>
+          <label>Lugar
+            <input id="fLugar" maxlength="120" placeholder="Ej. Parroquia San Cayetano">
+          </label>
+          <label>Encargados
+            <input id="fEncargados" maxlength="200" placeholder="Ej. Esther y Alfredo, Familia Pérez">
+          </label>
           <label>Descripción
             <textarea id="fDescripcion" rows="3" maxlength="1000" placeholder="Detalles para la congregación (opcional)"></textarea>
           </label>
@@ -119,6 +126,7 @@
             </label>
           </div>
         </div>
+        <div id="categoriasAdmin" class="categorias-admin"></div>
         <div id="tablaEventos" class="tabla"></div>
       </div>
     </section>
@@ -131,6 +139,20 @@
       <div class="dialogo__acciones">
         <button class="btn btn--fantasma" value="no">Cancelar</button>
         <button class="btn btn--peligro" value="si">Eliminar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="renombrar" class="dialogo">
+    <form method="dialog" class="form">
+      <h3>Renombrar categoría</h3>
+      <p id="renombrarTexto"></p>
+      <label>Nuevo nombre
+        <input id="nuevoNombre" maxlength="40" required autocomplete="off">
+      </label>
+      <div class="dialogo__acciones">
+        <button class="btn btn--fantasma" value="no" formnovalidate>Cancelar</button>
+        <button class="btn" value="si">Renombrar</button>
       </div>
     </form>
   </dialog>

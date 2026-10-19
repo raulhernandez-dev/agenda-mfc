@@ -54,8 +54,54 @@ export function horaBonita(hora) {
   return `${h12}:${String(m).padStart(2, "0")} ${sufijo}`;
 }
 
-export function categoria(clave) {
-  return CATEGORIAS[clave] || CATEGORIAS.otro;
+// Eventos guardados antes de las categorías libres usan estas claves.
+const ANTIGUAS = {
+  culto: "Culto", oracion: "Oración", estudio: "Estudio bíblico", jovenes: "Jóvenes",
+  ninos: "Niños", especial: "Evento especial", otro: "Otro",
+};
+const COLORES = {
+  ...CATEGORIAS,
+  "Culto": "#7a2334", "Oración": "#3c5a8a", "Estudio bíblico": "#2f6b5a", "Jóvenes": "#b5651d",
+  "Niños": "#8a5aa8", "Otro": "#6b6258", "General": "#6b6258",
+};
+const PALETA = ["#7a2334", "#3c5a8a", "#2f6b5a", "#b5651d", "#8a5aa8", "#a8822f",
+  "#02594a", "#9c3d6b", "#4f6d2a", "#5b4a8a", "#2d6f8a", "#8a4b2f"];
+
+// "Misa", "misa " y "MISA" son la misma categoría.
+export const claveCategoria = (nombre = "") =>
+  nombre.trim().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+
+export function nombreCategoria(valor) {
+  const v = (valor || "").trim();
+  return ANTIGUAS[v] || v || "General";
+}
+
+export function categoria(valor) {
+  const nombre = nombreCategoria(valor);
+  const clave = claveCategoria(nombre);
+  let color = Object.entries(COLORES).find(([n]) => claveCategoria(n) === clave)?.[1];
+  if (!color) {
+    let h = 0;
+    for (const c of clave) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    color = PALETA[h % PALETA.length];
+  }
+  return { nombre, clave, color };
+}
+
+// Categorías presentes en una lista de eventos, con cuántos eventos tiene cada una.
+export function categoriasDe(eventos) {
+  const mapa = new Map();
+  for (const e of eventos) {
+    const cat = categoria(e.categoria);
+    if (!mapa.has(cat.clave)) mapa.set(cat.clave, { ...cat, total: 0 });
+    mapa.get(cat.clave).total++;
+  }
+  return [...mapa.values()].sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+}
+
+export function rangoHora(e) {
+  if (!e.hora) return "";
+  return e.horaFin ? `${horaBonita(e.hora)} – ${horaBonita(e.horaFin)}` : horaBonita(e.hora);
 }
 
 export function ordenarEventos(eventos) {
@@ -89,17 +135,16 @@ export function eventosDemo() {
   const h = hoyISO();
   const proximoDomingo = sumarDias(h, (7 - aFecha(h).getDay()) % 7);
   const base = [
-    { titulo: "Culto dominical", hora: "10:00", lugar: "Templo principal", categoria: "culto",
-      descripcion: "Alabanza, adoración y predicación de la Palabra. ¡Toda la familia es bienvenida!" },
-    { titulo: "Noche de oración", hora: "19:30", lugar: "Salón de oración", categoria: "oracion",
-      descripcion: "Un tiempo para interceder unos por otros." },
-    { titulo: "Estudio bíblico: Evangelio de Juan", hora: "19:00", lugar: "Aula 2", categoria: "estudio",
-      descripcion: "Trae tu Biblia y un cuaderno." },
-    { titulo: "Reunión de jóvenes", hora: "18:00", lugar: "Salón juvenil", categoria: "jovenes",
-      descripcion: "Juegos, alabanza y una palabra para nuestra generación." },
-    { titulo: "Escuela dominical infantil", hora: "10:00", lugar: "Aulas infantiles", categoria: "ninos", descripcion: "" },
-    { titulo: "Concierto de alabanza", hora: "18:30", lugar: "Templo principal", categoria: "especial",
-      descripcion: "Una tarde especial de música y gratitud. Entrada libre." },
+    { titulo: "Misa San Cayetano", hora: "10:00", horaFin: "11:00", lugar: "Parroquia San Cayetano", categoria: "Misa",
+      encargados: "Esther y Alfredo", descripcion: "Misa mensual del sector. ¡Toda la familia es bienvenida!" },
+    { titulo: "Rosario Misionero", hora: "19:30", lugar: "Casa de la familia Pérez", categoria: "Rosario",
+      encargados: "Familia Pérez López", descripcion: "" },
+    { titulo: "Pláticas prematrimoniales", hora: "17:00", horaFin: "20:00", lugar: "Salón parroquial", categoria: "Pláticas",
+      encargados: "Equipo de Pláticas", descripcion: "Trae tu Biblia y un cuaderno." },
+    { titulo: "Hora Santa", hora: "20:00", horaFin: "21:00", lugar: "Capilla", categoria: "Hora Santa", descripcion: "" },
+    { titulo: "Reunión de equipo", hora: "18:00", lugar: "Salón parroquial", categoria: "Reunión", descripcion: "" },
+    { titulo: "Kerigma", hora: "09:00", horaFin: "18:00", lugar: "Casa de retiros", categoria: "Evento especial",
+      encargados: "Coordinación de sector", descripcion: "Retiro de fin de semana. Inscripciones con tu jefe de ciclo." },
   ];
   const desfases = [0, 3, 4, 6, 7, 13];
   return base.map((e, i) => ({ id: `demo-${i}`, fecha: sumarDias(proximoDomingo, desfases[i]), ...e }));

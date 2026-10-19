@@ -3,7 +3,7 @@
 Sitio web con dos partes:
 
 - **`index.html`**: vista pública (solo lectura). Muestra el próximo evento, una lista por mes y un calendario, con filtros por categoría.
-- **`admin.html`**: panel de administración protegido con usuario y contraseña. Desde ahí se crean, editan, duplican y eliminan eventos, y se pueden crear eventos repetidos (semanales, quincenales o mensuales).
+- **`admin.html`**: panel de administración protegido con usuario y contraseña. Desde ahí se crean, editan, duplican y eliminan eventos (con hora de inicio y fin, lugar, encargados y categoría libre), se pueden crear eventos repetidos (semanales, quincenales o mensuales) y renombrar categorías.
 
 Los cambios hechos en el admin aparecen **al instante** en la vista pública.
 
@@ -68,12 +68,12 @@ y abre <http://localhost:8000>. Mientras `js/config.js` no tenga tu configuraci�
 | Qué | Dónde |
 | --- | --- |
 | Nombre, título y versículo | `js/config.js` → `IGLESIA` |
-| Categorías y sus colores | `js/config.js` → `CATEGORIAS` |
+| Categorías sugeridas y sus colores | `js/config.js` → `CATEGORIAS` (en el panel se puede escribir cualquier otra; las nuevas reciben color automático) |
 | Colores y tipografías | `css/estilos.css` (variables al inicio) |
 | Logo e imagen principal | `img/logo.webp`, `img/sagrada-familia.webp` (originales en `img/originales/`) |
 | Icono de la pestaña | `img/icono-32.png`, `img/icono-180.png` |
 
-> Si eliminas una categoría que ya usan eventos guardados, esos eventos se mostrarán como “Otro”.
+> Para cambiarle el nombre a una categoría en todos sus eventos (por ejemplo, de “Culto” a “Misa”), tócala en la sección **Categorías** del panel de administración.
 
 ## Límites del plan gratuito
 

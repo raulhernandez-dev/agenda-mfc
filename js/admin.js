@@ -7,8 +7,8 @@ import {
 import { CATEGORIAS, configurado } from "./config.js";
 import { db, auth, COLECCION, aLista } from "./firebase.js";
 import {
-  MESES, escapar, aFecha, aISO, hoyISO, sumarDias, fechaLarga, horaBonita, categoria,
-  ordenarEventos, aplicarMarca, aviso,
+  MESES, escapar, aFecha, aISO, hoyISO, sumarDias, fechaLarga, rangoHora, categoria,
+  categoriasDe, claveCategoria, nombreCategoria, ordenarEventos, aplicarMarca, aviso,
 } from "./comun.js";
 
 const $ = (sel) => document.querySelector(sel);
@@ -66,6 +66,7 @@ function escuchar() {
   if (desuscribir) return;
   desuscribir = onValue(ref(db, COLECCION), (snap) => {
     eventos = ordenarEventos(aLista(snap));
+    pintarCategorias();
     pintarTabla();
   }, (err) => {
     console.error(err);
@@ -81,23 +82,34 @@ function mensajeError(err) {
 
 // ---------- Formulario ----------
 
-$("#fCategoria").innerHTML = Object.entries(CATEGORIAS)
-  .map(([k, c]) => `<option value="${k}">${escapar(c.nombre)}</option>`).join("");
 $("#fFecha").value = hoyISO();
+pintarCategorias();
 
 $("#fRepetir").addEventListener("change", () => {
   $("#fVeces").disabled = $("#fRepetir").value === "0";
 });
 
 function leerFormulario() {
+  const hora = $("#fHora").value;
   return {
     titulo: $("#fTitulo").value.trim(),
     fecha: $("#fFecha").value,
-    hora: $("#fHora").value,
-    categoria: $("#fCategoria").value,
+    hora,
+    horaFin: hora ? $("#fHoraFin").value : "",
+    categoria: categoriaEscrita(),
     lugar: $("#fLugar").value.trim(),
+    encargados: $("#fEncargados").value.trim(),
     descripcion: $("#fDescripcion").value.trim(),
   };
+}
+
+// Si la categoría escrita ya existe (aunque cambien mayúsculas o acentos), se usa
+// el mismo nombre para no crear duplicados como "misa" y "Misa".
+function categoriaEscrita() {
+  const escrita = $("#fCategoria").value.trim().replace(/\s+/g, " ");
+  if (!escrita) return "";
+  const clave = claveCategoria(escrita);
+  return opcionesCategoria().find((n) => claveCategoria(n) === clave) || escrita;
 }
 
 function fechasRepetidas(inicio) {
@@ -118,6 +130,11 @@ $("#formEvento").addEventListener("submit", async (e) => {
   e.preventDefault();
   const datos = leerFormulario();
   if (!datos.titulo || !datos.fecha) return;
+  if (datos.horaFin && datos.horaFin <= datos.hora) {
+    aviso("La hora de fin debe ser después de la hora de inicio.", "error");
+    $("#fHoraFin").focus();
+    return;
+  }
   const btn = $("#btnGuardar");
   btn.disabled = true;
   try {
@@ -165,8 +182,10 @@ function editar(id) {
   $("#fTitulo").value = ev.titulo || "";
   $("#fFecha").value = ev.fecha || "";
   $("#fHora").value = ev.hora || "";
-  $("#fCategoria").value = CATEGORIAS[ev.categoria] ? ev.categoria : "otro";
+  $("#fHoraFin").value = ev.horaFin || "";
+  $("#fCategoria").value = ev.categoria ? nombreCategoria(ev.categoria) : "";
   $("#fLugar").value = ev.lugar || "";
+  $("#fEncargados").value = ev.encargados || "";
   $("#fDescripcion").value = ev.descripcion || "";
   $("#tituloForm").textContent = "Editar evento";
   $("#btnGuardar").textContent = "Guardar cambios";
@@ -209,6 +228,63 @@ async function eliminar(id) {
   }, { once: true });
 }
 
+// ---------- Categorías ----------
+
+// Sugerencias: las de config.js más las que ya usan los eventos.
+function opcionesCategoria() {
+  const nombres = [...Object.keys(CATEGORIAS), ...categoriasDe(eventos).map((c) => c.nombre)];
+  const vistos = new Set();
+  return nombres.filter((n) => {
+    const clave = claveCategoria(n);
+    if (vistos.has(clave)) return false;
+    vistos.add(clave);
+    return true;
+  });
+}
+
+function pintarCategorias() {
+  $("#listaCategorias").innerHTML = opcionesCategoria()
+    .map((n) => `<option value="${escapar(n)}"></option>`).join("");
+  const cats = categoriasDe(eventos);
+  $("#categoriasAdmin").innerHTML = cats.length ? `
+    <span class="categorias-admin__titulo">Categorías <small>(toca una para renombrarla)</small></span>
+    <div class="filtros">
+      ${cats.map((c) => `
+        <button class="chip" style="--cat:${c.color}" data-renombrar="${escapar(c.clave)}" title="Renombrar en todos sus eventos">
+          <span class="chip__punto"></span>${escapar(c.nombre)} <span class="chip__total">${c.total}</span>
+        </button>`).join("")}
+    </div>` : "";
+}
+
+$("#categoriasAdmin").addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-renombrar]");
+  if (btn) renombrarCategoria(btn.dataset.renombrar);
+});
+
+function renombrarCategoria(clave) {
+  const afectados = eventos.filter((ev) => categoria(ev.categoria).clave === clave);
+  if (!afectados.length) return;
+  const actual = categoria(afectados[0].categoria).nombre;
+  const dialogo = $("#renombrar");
+  $("#renombrarTexto").textContent = `“${actual}” se cambiará en ${afectados.length} evento(s).`;
+  $("#nuevoNombre").value = actual;
+  dialogo.showModal();
+  $("#nuevoNombre").select();
+  dialogo.addEventListener("close", async () => {
+    const nuevo = $("#nuevoNombre").value.trim().replace(/\s+/g, " ");
+    if (dialogo.returnValue !== "si" || !nuevo || nuevo === actual) return;
+    const cambios = {};
+    for (const ev of afectados) cambios[`${COLECCION}/${ev.id}/categoria`] = nuevo;
+    try {
+      await update(ref(db), cambios);
+      aviso(`Categoría renombrada a “${nuevo}”.`);
+    } catch (err) {
+      console.error(err);
+      aviso(mensajeError(err), "error");
+    }
+  }, { once: true });
+}
+
 // ---------- Tabla ----------
 
 $("#buscar").addEventListener("input", pintarTabla);
@@ -229,7 +305,8 @@ function pintarTabla() {
   const hoy = hoyISO();
   const lista = eventos.filter((ev) =>
     (verPasados || ev.fecha >= hoy) &&
-    (!texto || `${ev.titulo} ${ev.lugar} ${ev.descripcion}`.toLowerCase().includes(texto)));
+    (!texto || `${ev.titulo} ${ev.lugar} ${ev.encargados} ${ev.descripcion} ${categoria(ev.categoria).nombre}`
+      .toLowerCase().includes(texto)));
 
   $("#contador").textContent = lista.length;
   if (!lista.length) {
@@ -247,7 +324,8 @@ function pintarTabla() {
         </div>
         <div class="fila__info">
           <strong>${escapar(ev.titulo)}</strong>
-          <span class="sutil">${fechaLarga(ev.fecha)}${ev.hora ? ` · ${horaBonita(ev.hora)}` : ""}${ev.lugar ? ` · ${escapar(ev.lugar)}` : ""}</span>
+          <span class="sutil">${fechaLarga(ev.fecha)}${ev.hora ? ` · ${rangoHora(ev)}` : ""}${ev.lugar ? ` · ${escapar(ev.lugar)}` : ""}</span>
+          ${ev.encargados ? `<span class="sutil">Encargados: ${escapar(ev.encargados)}</span>` : ""}
           <span class="badge">${escapar(cat.nombre)}</span>
         </div>
         <div class="fila__acciones">
