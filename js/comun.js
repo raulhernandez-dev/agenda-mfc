@@ -55,14 +55,13 @@ export function horaBonita(hora) {
 }
 
 // Eventos guardados antes de las categorías libres usan estas claves.
+// "estudio" se muestra como "Pláticas".
 const ANTIGUAS = {
-  culto: "Culto", oracion: "Oración", estudio: "Estudio bíblico", jovenes: "Jóvenes",
-  ninos: "Niños", especial: "Evento especial", otro: "Otro",
+  culto: "Culto", oracion: "Oración", estudio: "Pláticas", especial: "Evento especial", otro: "Otro",
 };
 const COLORES = {
   ...CATEGORIAS,
-  "Culto": "#7a2334", "Oración": "#3c5a8a", "Estudio bíblico": "#2f6b5a", "Jóvenes": "#b5651d",
-  "Niños": "#8a5aa8", "Otro": "#6b6258", "General": "#6b6258",
+  "Culto": "#7a2334", "Oración": "#3c5a8a", "Otro": "#6b6258", "General": "#6b6258",
 };
 const PALETA = ["#7a2334", "#3c5a8a", "#2f6b5a", "#b5651d", "#8a5aa8", "#a8822f",
   "#02594a", "#9c3d6b", "#4f6d2a", "#5b4a8a", "#2d6f8a", "#8a4b2f"];
