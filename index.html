@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agenda MFC Sector GH</title>
+  <meta name="description" content="Agenda de actividades del Movimiento Familiar Cristiano Católico, Sector GH.">
+  <meta property="og:title" content="Agenda MFC Sector GH">
+  <meta property="og:description" content="Fechas y actividades del Movimiento Familiar Cristiano Católico, Sector GH.">
+  <meta name="theme-color" content="#02594a">
+  <link rel="icon" href="img/icono-32.png" type="image/png">
+  <link rel="apple-touch-icon" href="img/icono-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="contenedor hero__contenido">
+      <div class="hero__texto">
+        <img class="hero__logo" src="img/logo.webp" alt="Logotipo del MFC católico" width="400" height="700">
+        <p class="hero__iglesia" data-iglesia="movimiento"></p>
+        <h1 class="hero__titulo" data-iglesia="titulo"></h1>
+        <blockquote class="hero__versiculo">
+          <p>“<span data-iglesia="versiculo"></span>”</p>
+          <cite data-iglesia="cita"></cite>
+        </blockquote>
+      </div>
+      <figure class="hero__imagen">
+        <img src="img/sagrada-familia.webp" width="800" height="1000"
+          alt="Vitral de la Sagrada Familia: María, José y el Niño Jesús bajo el Espíritu Santo">
+      </figure>
+    </div>
+  </header>
+
+  <main class="contenedor">
+    <div id="avisoDemo" class="banner" hidden>
+      Estás viendo <strong>eventos de ejemplo</strong>. Configura Firebase en <code>js/config.js</code> para mostrar la agenda real.
+    </div>
+
+    <section id="destacado" class="destacado" aria-live="polite" hidden></section>
+
+    <div class="barra">
+      <div class="filtros" id="filtros" role="group" aria-label="Filtrar por categoría"></div>
+      <div class="vistas" role="tablist" aria-label="Tipo de vista">
+        <button class="vistas__btn activo" data-vista="lista" role="tab" aria-selected="true">Lista</button>
+        <button class="vistas__btn" data-vista="calendario" role="tab" aria-selected="false">Calendario</button>
+      </div>
+    </div>
+
+    <section id="vistaLista">
+      <label class="interruptor">
+        <input type="checkbox" id="verPasados">
+        <span>Mostrar eventos pasados</span>
+      </label>
+      <div id="lista" class="lista">
+        <p class="cargando">Cargando agenda…</p>
+      </div>
+    </section>
+
+    <section id="vistaCalendario" hidden>
+      <div class="calendario">
+        <div class="calendario__cabecera">
+          <button class="icono-btn" id="mesAnterior" aria-label="Mes anterior">‹</button>
+          <h2 id="tituloMes"></h2>
+          <button class="icono-btn" id="mesSiguiente" aria-label="Mes siguiente">›</button>
+        </div>
+        <div class="calendario__grid" id="gridCalendario"></div>
+      </div>
+      <div id="detalleDia" class="detalle-dia"></div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor pie__contenido">
+      <p>© <span id="anio"></span> <span data-iglesia="nombre"></span></p>
+      <a href="admin.html" class="pie__admin">Administrar</a>
+    </div>
+  </footer>
+
+  <script type="module" src="js/publico.js"></script>
+</body>
+</html>
